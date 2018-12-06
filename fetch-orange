@@ -1,20 +1,30 @@
 #!/usr/bin/env python
+import string
 
 import pandas as pd
 import MySQLdb as mysql
+import unicodedata as nd
 from fire import Fire
 
-def main(host:str='10.1.7.198',
-         port:int=43306,
-         user:str='fun_data_hand',
-         passwd:str='ktn7Gqv',
-         db:str='db_orange_video',
-         charset:str='utf8mb4'):
+
+def main(host: str = '10.1.7.198',
+         port: int = 43306,
+         user: str = 'fun_data_hand',
+         passwd: str = 'ktn7Gqv',
+         db: str = 'db_orange_video',
+         charset: str = 'utf8mb4'):
   conn = mysql.connect(**locals())
   c = conn.cursor()
-  c.execute('''select video_id,name from fv_video''')
+  c.execute('''select video_id,name from fv_video where disable=0''')
+
+  to = ' ' * (len(string.punctuation) + 4)
+  trans = str.maketrans(' \t\n\r' + string.punctuation, to)
+
   for row in c:
-    print(row[0], row[1], sep=',')
+    name = nd.normalize('NFKC', row[1])
+    name = name.translate(trans).strip()
+    print(row[0], name, sep = ',')
+
 
 if __name__ == '__main__':
   Fire(main)
