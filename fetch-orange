@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import pandas as pd
+import MySQLdb as mysql
+from fire import Fire
+
+def main(host:str='10.1.7.198',
+         port:int=43306,
+         user:str='fun_data_hand',
+         passwd:str='ktn7Gqv',
+         db:str='db_orange_video',
+         charset:str='utf8mb4'):
+  conn = mysql.connect(**locals())
+  c = conn.cursor()
+  c.execute('''select video_id,name from fv_video''')
+  for row in c:
+    print(row[0], row[1], sep=',')
+
+if __name__ == '__main__':
+  Fire(main)
