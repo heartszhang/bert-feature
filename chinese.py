@@ -1,6 +1,7 @@
 """Extract pre-computed feature vectors from a PyTorch BERT model.
 Some codes are copied from bert-pretrained-pytorch/examples."""
 import torch as t
+import numpy as np
 from sys import stdin, stderr, stdout
 from typing import Iterator, List
 from torch.utils.data import TensorDataset, DataLoader
@@ -94,7 +95,7 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
          with_lower_case: bool = True,
          layer: int = -2,
          max_seq_length: int = 128,
-         batch_n: int = 32,
+         batch_n: int = 64,
          without_cuda: bool = False) -> None:
   """--bert-model: bert-base-uncased, bert-large-uncased,
                  bert-base-cased, bert-base-multilingual, bert-base-chinese.
@@ -137,7 +138,8 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
       pools = pools[layer]
       pooled = pools.mean(dim = 1)  # 平均池化
       o = t.cat([uids.reshape(-1, 1).float(), pooled], dim = 1)
-      o.detach().numpy().tofile(stdout)
+      np.savetxt(stdout, o.detach().numpy(), fmt='%.8g')
+      # o.detach().numpy().tofile(stdout)
 
 
 if __name__ == "__main__":
