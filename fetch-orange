@@ -17,7 +17,7 @@ def main(host: str = '10.1.7.198',
   with closing(conn.cursor()) as c:
     c.execute('''select video_id,name from fv_video where disable=0''')
 
-    chars = string.punctuation + '\t\n\r'
+    chars = string.punctuation + string.whitespace
     to = ' ' * len(chars)
     trans = str.maketrans(chars, to)
     # 所有标点空白符号全部转换为一个空格，特别要转换换行符号，否则pandas会有灵异
