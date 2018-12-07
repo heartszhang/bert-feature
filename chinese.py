@@ -62,7 +62,6 @@ def convert_example_to_features(uid: int, text_a: str,
   assert len(input_ids) == seq_length
   assert len(input_mask) == seq_length
   assert len(input_type_ids) == seq_length
-
   return InputFeatures(unique_id = uid,
                        tokens = tokens,
                        input_ids = input_ids,
@@ -136,8 +135,8 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
                        token_type_ids = None,
                        attention_mask = input_mask)
       pools = pools[layer]
-      pooled = pools.mean(dim = 1)  # 平均池化
-      o = t.cat([uids.reshape(-1, 1).float(), pooled], dim = 1)
+      pooled = pools.mean(dim = 1).double()  # 平均池化
+      o = t.cat([uids.reshape(-1, 1).double(), pooled], dim = 1)
       np.savetxt(stdout, o.detach().numpy(), fmt='%.8g')
       # o.detach().numpy().tofile(stdout)
 
