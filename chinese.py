@@ -14,6 +14,13 @@ def log(*args, **kwargs):
   print(*args, file = stderr, **kwargs)
 
 
+# InputFeatures 表示一个视频标题
+# unique_id: video-id
+# input_ids: 字编号
+# input_masks: 变长句子变成定长句子的时候，会填充一些空token，masks标记那些是填充的
+# input_type_ids: bert两个句子组成一个输入，type_id标记每个token属于第一句还是第二句
+# 因为我们没有第二句，input_type是 全0
+# 中文内容，一个Token就是一个汉字
 class InputFeatures(object):
   """A single set of features of data."""
 
@@ -30,7 +37,7 @@ def convert_example_to_features(uid: int, text_a: str,
                                 tokenizer: BertTokenizer, ) -> InputFeatures:
   tokens_a = tokenizer.tokenize(text_a)
 
-  # 我们只处理一个句子
+  # 我们只处理一个句子，对长句截断, 所以只需要头尾附加CLS/SEP
   tokens_a = tokens_a[:seq_length - 2]
 
   # For single sequences:
@@ -69,13 +76,16 @@ def convert_example_to_features(uid: int, text_a: str,
                        input_type_ids = input_type_ids)
 
 
+# 从stdin逐行读入短时频标题
+# 两个字段用逗号分割, video_id, name, name是经过去标点的后的文字
+# batch-n: 每次预测的批次大小, 根据我们的GPU选择 合适大小
 def each_line(max_seq_len: int,
               batch_n: int,
               sep: str,
               tokenizer) -> Iterator[List[InputFeatures]]:
   batch = []
   for line in stdin:
-    line = line.strip()
+    line = line.strip()  # 去掉空白
     if not line:
       continue
     lid, text_a = line.split(sep, 1)
@@ -91,7 +101,6 @@ def each_line(max_seq_len: int,
 
 def main(bert_model: str = '/repo/bert-models/ch-base',
          sep: str = ',',
-         with_lower_case: bool = True,
          layer: int = -2,
          max_seq_length: int = 128,
          batch_n: int = 64,
@@ -112,8 +121,7 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
 
   log(f"device: {device} n_gpu: {n_gpu} ")
 
-  tokenizer = BertTokenizer.from_pretrained(bert_model,
-                                            do_lower_case = with_lower_case)
+  tokenizer = BertTokenizer.from_pretrained(bert_model)
 
   for features in each_line(max_seq_length, batch_n, sep, tokenizer):
     model = BertModel.from_pretrained(bert_model)
@@ -123,6 +131,7 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
     input_mask = t.tensor([f.input_mask for f in features], dtype = t.long)
     unique_ids = t.tensor([f.unique_id for f in features], dtype = t.long)
 
+    # 为了把每个句子和它的视频id对应起来，我们把unique_ids也传进去
     eval_data = TensorDataset(input_ids, input_mask, unique_ids)
     eval_dataloader = DataLoader(eval_data, batch_size = batch_n)
 
@@ -135,10 +144,11 @@ def main(bert_model: str = '/repo/bert-models/ch-base',
                        token_type_ids = None,
                        attention_mask = input_mask)
       pools = pools[layer]
-      pooled = pools.mean(dim = 1).double()  # 平均池化
+      # 需要转换成64位浮点，否则会出现video_id表示错乱的情况
+      pooled = pools.mean(dim = 1).double()  # 用什么池也是个问题, 平均池化是因为简单
       o = t.cat([uids.reshape(-1, 1).double(), pooled], dim = 1)
-      np.savetxt(stdout, o.detach().numpy(), fmt='%.8g')
-      # o.detach().numpy().tofile(stdout)
+      # 把ndarray按行输出
+      np.savetxt(stdout, o.detach().numpy(), fmt = '%.8g')
 
 
 if __name__ == "__main__":
