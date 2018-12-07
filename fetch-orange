@@ -3,8 +3,10 @@ import string
 import MySQLdb as mysql
 import unicodedata as nd
 from fire import Fire
+from contextlib import closing
 
 
+# noinspection SqlNoDataSourceInspection,SqlDialectInspection
 def main(host: str = '10.1.7.198',
          port: int = 43306,
          user: str = 'fun_data_hand',
@@ -12,17 +14,18 @@ def main(host: str = '10.1.7.198',
          db: str = 'db_orange_video',
          charset: str = 'utf8mb4'):
   conn = mysql.connect(**locals())
-  c = conn.cursor()
-  c.execute('''select video_id,name from fv_video where disable=0''')
+  with closing(conn.cursor()) as c:
+    c.execute('''select video_id,name from fv_video where disable=0''')
 
-  to = ' ' * (len(string.punctuation) + 4)
-  trans = str.maketrans(' \t\n\r' + string.punctuation, to)
-  # 所有标点空白符号全部转换为一个空格，特别要转换换行符号，否则pandas会有灵异
+    to = ' ' * (len(string.punctuation) + 4)
+    trans = str.maketrans(' \t\n\r' + string.punctuation, to)
+    # 所有标点空白符号全部转换为一个空格，特别要转换换行符号，否则pandas会有灵异
 
-  for row in c:
-    name = nd.normalize('NFKC', row[1])  # 转换多数中文标点到英文标点
-    name = name.translate(trans).strip()  # 去掉头尾空白符号
-    print(row[0], name, sep = ',')  # 标题中已经没有逗号
+    for row in c:
+      name = nd.normalize('NFKC', row[1])  # 转换多数中文标点到英文标点
+      name = name.translate(trans).strip()  # 去掉头尾空白符号
+      print(row[0], name, sep = ',')  # 标题中已经没有逗号
+  conn.close()
 
 
 if __name__ == '__main__':
