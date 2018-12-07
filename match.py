@@ -2,13 +2,15 @@ import numpy as np
 import pandas as pd
 import faiss
 from fire import Fire
+from pathlib import Path
 
 
 def main(vec: str,
          name: str,
          nlist: int = 32,
          nprobe: int = 2,
-         k: int = 10) -> None:
+         k: int = 10,
+         sample_n: int = 100, ) -> None:
   names = pd.read_csv(name, header = None, names = ['vid', 'name'])
   data = np.loadtxt(vec)
   assert data.shape[0] == names.shape[0]
@@ -22,7 +24,13 @@ def main(vec: str,
   index.add(vecs)
 
   index.nprobe = nprobe
-  _, sims = index.search(vecs, k)
+  _, i = index.search(vecs, k)
+  to = Path(name).with_suffix(f'.{k}-search').resolve()
+  np.savetxt(to, i, fmt = '%d')
+  samples = np.random.choice(len(i), sample_n)
+  for sample in i[samples]:
+    g = names.iloc[sample]
+    print(g)
 
 
 if __name__ == '__main__':
