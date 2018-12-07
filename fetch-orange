@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import string
-
-import pandas as pd
 import MySQLdb as mysql
 import unicodedata as nd
 from fire import Fire
@@ -19,11 +17,12 @@ def main(host: str = '10.1.7.198',
 
   to = ' ' * (len(string.punctuation) + 4)
   trans = str.maketrans(' \t\n\r' + string.punctuation, to)
+  # 所有标点空白符号全部转换为一个空格，特别要转换换行符号，否则pandas会有灵异
 
   for row in c:
-    name = nd.normalize('NFKC', row[1])
-    name = name.translate(trans).strip()
-    print(row[0], name, sep = ',')
+    name = nd.normalize('NFKC', row[1])  # 转换多数中文标点到英文标点
+    name = name.translate(trans).strip()  # 去掉头尾空白符号
+    print(row[0], name, sep = ',')  # 标题中已经没有逗号
 
 
 if __name__ == '__main__':
