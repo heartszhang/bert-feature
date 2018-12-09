@@ -64,8 +64,8 @@ dim = vecs.shape[1]
 
 # 对向量集合进行索引
 # 我不知道nlist应该多少合适，选了和CPU差不多的一个数
-# 我们用内积量化向量距离就可以了, 也应该尝试下别的
-quantizer = faiss.IndexFlatL2(dim)  
+# 我们用欧范衡量距离就可以了, 也应该尝试下别的
+quantizer = faiss.IndexFlatL2(dim)
 index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss.METRIC_L2)
 index.train(vecs)
 index.add(vecs)

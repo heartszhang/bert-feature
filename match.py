@@ -19,7 +19,7 @@ def main(vec: str,
   vecs = data[:, 1:].astype(np.float32)
   dim = vecs.shape[1]
 
-  quantizer = faiss.IndexFlatL2(dim)  # 我们用内积量化向量距离就可以了, 也应该尝试下别的
+  quantizer = faiss.IndexFlatL2(dim)  # 向量L2距离就可以了, 也应该尝试下别的
   # 对向量集合进行索引
   # 我不知道nlist应该多少合适，选了和CPU差不多的一个数
   index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss.METRIC_L2)
