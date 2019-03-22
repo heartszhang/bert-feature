@@ -1,13 +1,6 @@
 # bert-feature
 
-![Python: 3.6](https://img.shields.io/badge/Python-3.6-brightgreen.svg)
-![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
-![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)
-![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)
-
-`bert-feature` 是一个利用google `bert` 预训练模型对橙子标题进行向量化的一个例子，然后我们利用`FAISS`搜索每个视频标题最临近的k个标题。
-
-*希望说明白了*
+`bert-feature` 是一个利用`Google BERT` 预训练模型对视频标题进行向量化的一个例子，然后我们利用`FAISS`搜索每个视频标题最临近的k个标题。
 
 ## Requirements
 
@@ -25,7 +18,7 @@
 ```bash
 python chinese.py --bert-model /repo/bert-models/ch-base \
   --seq=',' \
-  --batch-n=64 </repo/svideo.name >svideo-768.nd 
+  --batch-n=64 </repo/svideo.name >svideo-768.nd
 ```
 
 ### Read the nd like this
@@ -33,7 +26,7 @@ python chinese.py --bert-model /repo/bert-models/ch-base \
 ```python
 import numpy as np
 vecs = np.fromfile('svideo-768.nd')
-vecs = vecs.reshape(-1, 768+1)  
+vecs = vecs.reshape(-1, 768+1)
 id, vec = vecs[:,0].astype(int), vecs[:,1:].astype(np.float32)
 assert vec.shape[1]==768
 ```
@@ -43,11 +36,11 @@ assert vec.shape[1]==768
 ```python
 import pandas as pd
 import numpy as np
-import faiss 
+import faiss
 from pathlib import Path
 
-name = 'orange.name'
-vec = 'orange-768.nd'
+name = 'svideo.name'
+vec = 'svideo-768.nd'
 nlist = 32
 nprobe = 2
 k = 10
@@ -97,7 +90,3 @@ python match.py --vec=orange-768.nd --name=orange.name
 - `pip install pytorch-pretrained-bert`
 - 模型文件是转换过的google官方中文预先训练模型
 - 可以在[pytorch-pretrained-bert](https://github.com/huggingface/pytorch-pretrained-BERT)获取
-- 也可以在 http://10.1.7.198:8091/bert-features/ 下载
-- 如果不能访问7.198，也可以使用 http://192.168.8.220:18091/bert-features/ 这个地址
-- 如果有什么疑问欢迎交流
-- 如果有什么好建议，希望带着`代码`来
