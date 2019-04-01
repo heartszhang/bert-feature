@@ -1,4 +1,4 @@
-# bert-feature
+# BERT-Feature
 
 `bert-feature` 是一个利用`Google BERT` 预训练模型对视频标题进行向量化的一个例子，然后我们利用`FAISS`搜索每个视频标题最临近的k个标题。
 
@@ -90,3 +90,4 @@ python match.py --vec=orange-768.nd --name=orange.name
 - `pip install pytorch-pretrained-bert`
 - 模型文件是转换过的google官方中文预先训练模型
 - 可以在[pytorch-pretrained-bert](https://github.com/huggingface/pytorch-pretrained-BERT)获取
+
